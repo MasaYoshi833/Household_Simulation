@@ -37,11 +37,8 @@ monthly_contribution = st.slider("月額積立額（万円）", min_value=1, max
 equity_ratio = st.slider("株式比率(残りは債券)（%）", 0, 100, 50)
 
 # 実行ボタン
-if st.button("シミュレーションを実行",type = "primary"):
+if st.button("シミュレーションを実行", type="primary"):
 
-    # ----------------------------
-    # 📊 パラメータ設定
-    # ----------------------------
     retirement_age = 65
     start_year = 2025
     end_age = retirement_age
@@ -49,7 +46,7 @@ if st.button("シミュレーションを実行",type = "primary"):
     n_months = n_years * 12
     ages = np.arange(start_age, end_age + 1)
     years = np.arange(start_year, start_year + n_years + 1)
-    
+
     equity_return = 0.055
     bond_return = 0.009
     inflation = 0.02
@@ -63,16 +60,14 @@ if st.button("シミュレーションを実行",type = "primary"):
     corrYearly = np.array([[1, correlation],
                            [correlation, 1]])
 
-    # 月次変換
     monthly_returns = returnYearly / 12
     monthly_volatility = volatilityYearly / np.sqrt(12)
     cov_matrix = np.diag(monthly_volatility) @ corrYearly @ np.diag(monthly_volatility)
 
-    # 投資設定
     weights = np.array([equity_ratio / 100, 1 - (equity_ratio / 100)])
     n_simulations = 1000
 
-    all_trajectories = np.zeros((n_simulations, n_years + 1))  # 年単位
+    all_trajectories = np.zeros((n_simulations, n_years + 1))
 
     for i in range(n_simulations):
         portfolio_value = 0
@@ -86,9 +81,6 @@ if st.button("シミュレーションを実行",type = "primary"):
                 values_by_year.append(portfolio_value)
         all_trajectories[i, :] = values_by_year
 
-    # ----------------------------
-    # 📉 パーセンタイル計算
-    # ----------------------------
     final_values = all_trajectories[:, -1]
     p25_val = np.percentile(final_values, 25)
     p50_val = np.percentile(final_values, 50)
@@ -102,9 +94,6 @@ if st.button("シミュレーションを実行",type = "primary"):
     trajectory_50 = all_trajectories[idx_50]
     trajectory_75 = all_trajectories[idx_75]
 
-    # ----------------------------
-    # 💹 グラフ描画
-    # ----------------------------
     fig, ax = plt.subplots(figsize=(12, 8))
 
     for i in range(n_simulations):
@@ -114,158 +103,144 @@ if st.button("シミュレーションを実行",type = "primary"):
     ax.plot(ages, trajectory_50, color='red', linewidth=2, label='50th Percentile')
     ax.plot(ages, trajectory_25, color='blue', linestyle='dashed', linewidth=2, label='25th Percentile')
 
-    # 貯金ケース
     saving_trajectory = monthly_contribution * 12 * (ages - start_age)
     ax.plot(ages, saving_trajectory, color='green', linewidth=2, label='Saving Only')
 
-    # 年齢と西暦を両方表示
     xtick_indices = [i for i, age in enumerate(ages) if age % 5 == 0 or age == start_age]
     xticks = ages[xtick_indices]
     xticklabels = [f"{age}\n({year})" for age, year in zip(ages[xtick_indices], years[xtick_indices])]
     ax.set_xticks(xticks)
     ax.set_xticklabels(xticklabels, fontsize=10)
-    
-    # Y軸の上限を85パーセンタイルで設定
+
     y_max = np.percentile(final_values, 85)
-    ax.set_ylim(0, y_max * 1.05)  # 少し余白
-    
+    ax.set_ylim(0, y_max * 1.05)
+
     ax.set_xlabel("Age(Year)")
     ax.set_ylabel("Amount (10,000 Yen)")
     ax.set_title("Investment Simulation")
     ax.legend()
     st.pyplot(fig)
 
-    # ----------------------------
-    # 🧾 結果数値の表示
-    # ----------------------------
     st.markdown("### 💰 最終積立額（定年時）")
     st.metric("75パーセンタイル", f"{trajectory_75[-1]:,.0f} 万円")
     st.metric("50パーセンタイル（中央値）", f"{trajectory_50[-1]:,.0f} 万円")
     st.metric("25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
     st.metric("貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
-    
-    if st.button("📘 家計シミュレーションに進む"):
+
+    if st.button("家計シミュレーションに進む"):
         st.session_state['go_to_household'] = True
-    
-# ----------------------------
-# ▶ ステップ2：家計管理シミュレーション
-# ----------------------------
+        st.session_state['ages'] = ages
+        st.session_state['years'] = years
+        st.session_state['trajectory_50'] = trajectory_50
 
 if 'go_to_household' in st.session_state and st.session_state['go_to_household']:
-    # ここで ages と years を定義
-    ages = np.arange(start_age, retirement_age + 1)
-    years = np.arange(start_year, start_year + len(ages))
 
-    # ユーザー入力項目（縦並び）
-    initial_savings = st.number_input("現在の預金額（万円）", value=300, step=10)
-    annual_income = st.number_input("現在の年収（万円）", value=500, step=10)
-    monthly_expense = st.number_input("月々の生活費（万円）", value=20, step=1)
+    ages = st.session_state.get('ages')
+    years = st.session_state.get('years')
+    trajectory_50 = st.session_state.get('trajectory_50')
 
-    with st.expander("👶 養育費（子供ごとに設定）"):
-        num_children = st.selectbox("子供の人数", [0, 1, 2])
-        child_birth_ages = []
-        for i in range(num_children):
-            age = st.slider(f"子供{i+1}の出産時の親の年齢", min_value=start_age, max_value=60, value=start_age+2)
-            child_birth_ages.append(age)
+    if ages is None or years is None or trajectory_50 is None:
+        st.error("ステップ1の結果が見つかりません。もう一度シミュレーションを実行してください。")
+    else:
+        initial_savings = st.number_input("現在の預金額（万円）", value=300, step=10)
+        annual_income = st.number_input("現在の年収（万円）", value=500, step=10)
+        monthly_expense = st.number_input("月々の生活費（万円）", value=20, step=1)
 
-    loan_amount = st.number_input("住宅ローン借入額（万円）", value=3000, step=100)
-    loan_interest_rate = st.number_input("ローン金利（年率 %）", value=1.0, step=0.1) / 100
-    loan_years = st.number_input("返済期間（年）", value=35, step=1)
+        with st.expander("👶 養育費（子供ごとに設定）"):
+            num_children = st.selectbox("子供の人数", [0, 1, 2])
+            child_birth_ages = []
+            for i in range(num_children):
+                age = st.slider(f"子供{i+1}の出産時の親の年齢", min_value=start_age, max_value=60, value=start_age+2)
+                child_birth_ages.append(age)
 
-    insurance_monthly = st.number_input("保険料（月額万円）", value=1.0, step=0.1)
+        loan_amount = st.number_input("住宅ローン借入額（万円）", value=3000, step=100)
+        loan_interest_rate = st.number_input("ローン金利（年率 %）", value=1.0, step=0.1) / 100
+        loan_years = st.number_input("返済期間（年）", value=35, step=1)
 
-    # 自動設定値
-    pension_start_age = 65
-    pension_annual = 200
-    retirement_age = 65
-    retirement_payout = 2000
-    income_growth_rate = 0.01
-    insurance_until_age = 65
-    child_support_until = 22
-    child_cost_per_month = 10
+        insurance_monthly = st.number_input("保険料（月額万円）", value=1.0, step=0.1)
 
-    # ---- ローン計算 ----
-    def calc_annual_loan_payment(principal, annual_rate, years):
-        monthly_rate = annual_rate / 12
-        n_payments = years * 12
-        monthly_payment = principal * (monthly_rate * (1 + monthly_rate)**n_payments) / ((1 + monthly_rate)**n_payments - 1)
-        return monthly_payment * 12
+        pension_start_age = 65
+        pension_annual = 200
+        retirement_age = 65
+        retirement_payout = 2000
+        income_growth_rate = 0.01
+        insurance_until_age = 65
+        child_support_until = 22
+        child_cost_per_month = 10
 
-    loan_annual_payment = calc_annual_loan_payment(loan_amount, loan_interest_rate, loan_years)
+        def calc_annual_loan_payment(principal, annual_rate, years):
+            monthly_rate = annual_rate / 12
+            n_payments = years * 12
+            monthly_payment = principal * (monthly_rate * (1 + monthly_rate)**n_payments) / ((1 + monthly_rate)**n_payments - 1)
+            return monthly_payment * 12
 
-    # ---- 家計シミュレーション ----
-    balance = initial_savings
-    balances = []
-    incomes = []
-    expenses = []
+        loan_annual_payment = calc_annual_loan_payment(loan_amount, loan_interest_rate, loan_years)
 
-    for i, age in enumerate(ages):
-        year_index = age - start_age
+        balance = initial_savings
+        balances = []
+        incomes = []
+        expenses = []
 
-        # 収入計算
-        if age < retirement_age:
-            income = annual_income * ((1 + income_growth_rate) ** year_index)
-        elif age >= pension_start_age:
-            income = pension_annual
-        else:
-            income = 0
+        for i, age in enumerate(ages):
+            year_index = age - start_age
 
-        # 支出計算
-        expense = monthly_expense * 12
+            if age < retirement_age:
+                income = annual_income * ((1 + income_growth_rate) ** year_index)
+            elif age >= pension_start_age:
+                income = pension_annual
+            else:
+                income = 0
 
-        if age <= insurance_until_age:
-            expense += insurance_monthly * 12
+            expense = monthly_expense * 12
 
-        child_support = 0
-        for birth_age in child_birth_ages:
-            if birth_age <= age < birth_age + child_support_until:
-                child_support += child_cost_per_month * 12
-        expense += child_support
+            if age <= insurance_until_age:
+                expense += insurance_monthly * 12
 
-        if year_index < loan_years:
-            expense += loan_annual_payment
+            child_support = 0
+            for birth_age in child_birth_ages:
+                if birth_age <= age < birth_age + child_support_until:
+                    child_support += child_cost_per_month * 12
+            expense += child_support
 
-        if age == retirement_age:
-            income += retirement_payout
+            if year_index < loan_years:
+                expense += loan_annual_payment
 
-        # 投資額を引く
-        if start_age <= age < retirement_age:
-            expense += monthly_contribution * 12
+            if age == retirement_age:
+                income += retirement_payout
 
-        # バランス更新
-        balance = balance + income - expense
-        balances.append(balance)
-        incomes.append(income)
-        expenses.append(expense)
+            if start_age <= age < retirement_age:
+                expense += monthly_contribution * 12
 
-    # ---- 投資リターンとの統合 ----
-    trajectory_50_full = np.zeros_like(balances)
-    trajectory_50_full[:len(trajectory_50)] = trajectory_50
-    combined_trajectory = np.array(balances) + trajectory_50_full
+            balance = balance + income - expense
+            balances.append(balance)
+            incomes.append(income)
+            expenses.append(expense)
 
-    # ---- グラフ描画 ----
-    fig2, ax2 = plt.subplots(figsize=(12, 6))
-    ax2.plot(ages, combined_trajectory, label='家計 + 投資リターン (50%)', color='blue', linewidth=2)
-    ax2.plot(ages, balances, label='家計のみ（投資なし）', color='gray', linestyle='--')
+        trajectory_50_full = np.zeros_like(balances)
+        trajectory_50_full[:len(trajectory_50)] = trajectory_50
+        combined_trajectory = np.array(balances) + trajectory_50_full
 
-    xtick_indices = [i for i, age in enumerate(ages) if age % 5 == 0 or age == start_age]
-    xticks = ages[xtick_indices]
-    xticklabels = [f"{age}\n({year})" for age, year in zip(ages[xtick_indices], years[xtick_indices])]
-    ax2.set_xticks(xticks)
-    ax2.set_xticklabels(xticklabels, fontsize=10)
+        fig2, ax2 = plt.subplots(figsize=(12, 6))
+        ax2.plot(ages, combined_trajectory, label='家計 + 投資リターン (50%)', color='blue', linewidth=2)
+        ax2.plot(ages, balances, label='家計のみ（投資なし）', color='gray', linestyle='--')
 
-    ax2.set_title("家計 + 投資（50パーセンタイル）の統合シミュレーション")
-    ax2.set_xlabel("Age (Year)")
-    ax2.set_ylabel("金額（万円, 実質）")
-    ax2.grid(True, linestyle='--', alpha=0.6)
-    ax2.legend()
-    st.pyplot(fig2)
+        xtick_indices = [i for i, age in enumerate(ages) if age % 5 == 0 or age == start_age]
+        xticks = ages[xtick_indices]
+        xticklabels = [f"{age}\n({year})" for age, year in zip(ages[xtick_indices], years[xtick_indices])]
+        ax2.set_xticks(xticks)
+        ax2.set_xticklabels(xticklabels, fontsize=10)
 
-    # 脚注
-    st.markdown("""
-    **📌注釈**：
-    - 年金は65歳以降、年間200万円を受給。
-    - 退職金は65歳時点で一括2,000万円を受領。
-    - 年金・退職金は平均的な水準で固定されています。
-    - 毎月の投資額（{monthly_contribution}万円）は家計の支出に含まれます。
-    """)
+        ax2.set_title("Household Simulation")
+        ax2.set_xlabel("Age (Year)")
+        ax2.set_ylabel("Amount(10,000Yen)")
+        ax2.grid(True, linestyle='--', alpha=0.6)
+        ax2.legend()
+        st.pyplot(fig2)
+
+        st.markdown(f"""
+        **📌注釈**：
+        - 年金は65歳以降、年間200万円を受給。
+        - 退職金は65歳時点で一括2,000万円を受領。
+        - 年金・退職金は平均的な水準で固定されています。
+        - 毎月の投資額（{monthly_contribution}万円）は家計の支出に含まれます。
+        """)
