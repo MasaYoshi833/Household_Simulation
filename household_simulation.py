@@ -148,47 +148,41 @@ if st.button("シミュレーションを実行",type = "primary"):
 # ----------------------------
 # ▶ ステップ2：家計管理シミュレーション
 # ----------------------------
+st.subheader("🏠 ステップ2：家計管理シミュレーション")
 
-if st.button("家計管理に進む", type="secondary"):
-    st.subheader("🏠 家計シミュレーション")
-
-    # 入力フォーム
-    initial_savings = st.number_input("現在の預金額（万円）", value=500)
-    annual_income = st.number_input("年収（万円）", value=600)
-    monthly_expense = st.number_input("生活費（万円/月）", value=20)
-    insurance_monthly = st.number_input("保険（月額・万円）", value=1.5)
-
+if st.button("家計管理シミュレーションに進む", type="primary"):
     st.markdown("---")
-    st.markdown("#### 👶 養育費の設定")
-    num_children = st.selectbox("子どもの人数", [0, 1, 2], index=1)
-    child_birth_years = []
-    for i in range(num_children):
-        birth = st.slider(f"子ども{i+1}の出産年齢", min_value=start_age, max_value=60, value=start_age + 2 * i)
-        child_birth_years.append(birth)
+    st.subheader("📝 家計の入力項目")
 
-    st.markdown("---")
-    st.markdown("#### 🏠 住宅ローン")
-    loan_amount = st.number_input("借入額（万円）", value=3000)
-    loan_interest_rate = st.number_input("金利（年率・%）", value=1.0) / 100
-    loan_years = st.number_input("返済期間（年）", value=35)
+    # ユーザー入力項目（縦並び）
+    initial_savings = st.number_input("現在の預金額（万円）", value=300, step=10)
+    annual_income = st.number_input("現在の年収（万円）", value=500, step=10)
+    monthly_expense = st.number_input("月々の生活費（万円）", value=20, step=1)
 
-    st.markdown("---")
-    st.markdown("#### 👴 年金・退職金")
-    pension_annual = 180  # 万円
-    retirement_payout = 2000  # 万円
-    retirement_age = 65
+    with st.expander("👶 養育費（子供ごとに設定）"):
+        num_children = st.selectbox("子供の人数", [0, 1, 2])
+        child_birth_ages = []
+        for i in range(num_children):
+            age = st.slider(f"子供{i+1}の出産時の親の年齢", min_value=start_age, max_value=60, value=start_age+2)
+            child_birth_ages.append(age)
+
+    loan_amount = st.number_input("住宅ローン借入額（万円）", value=3000, step=100)
+    loan_interest_rate = st.number_input("ローン金利（年率 %）", value=1.0, step=0.1) / 100
+    loan_years = st.number_input("返済期間（年）", value=35, step=1)
+
+    insurance_monthly = st.number_input("保険料（月額万円）", value=1.0, step=0.1)
+
+    # 自動設定値
     pension_start_age = 65
+    pension_annual = 200
+    retirement_age = 65
+    retirement_payout = 2000
+    income_growth_rate = 0.01
     insurance_until_age = 65
     child_support_until = 22
-    child_cost_per_month = 10  # 万円
-    income_growth_rate = 0.01
+    child_cost_per_month = 10
 
-    # 年齢と西暦
-    simulation_years = np.arange(start_age, 100)
-    simulation_length = len(simulation_years)
-    simulation_calendar = np.arange(2025, 2025 + simulation_length)
-
-    # ローン返済額計算
+    # ---- ローン計算 ----
     def calc_annual_loan_payment(principal, annual_rate, years):
         monthly_rate = annual_rate / 12
         n_payments = years * 12
@@ -197,16 +191,16 @@ if st.button("家計管理に進む", type="secondary"):
 
     loan_annual_payment = calc_annual_loan_payment(loan_amount, loan_interest_rate, loan_years)
 
-    # 初期化
+    # ---- 家計シミュレーション ----
     balance = initial_savings
     balances = []
     incomes = []
     expenses = []
 
-    for i, age in enumerate(simulation_years):
+    for i, age in enumerate(ages):
         year_index = age - start_age
 
-        # ---- 収入 ----
+        # 収入計算
         if age < retirement_age:
             income = annual_income * ((1 + income_growth_rate) ** year_index)
         elif age >= pension_start_age:
@@ -214,14 +208,15 @@ if st.button("家計管理に進む", type="secondary"):
         else:
             income = 0
 
-        # ---- 支出 ----
+        # 支出計算
         expense = monthly_expense * 12
+
         if age <= insurance_until_age:
             expense += insurance_monthly * 12
 
         child_support = 0
-        for birth_year in child_birth_years:
-            if birth_year <= age < birth_year + child_support_until:
+        for birth_age in child_birth_ages:
+            if birth_age <= age < birth_age + child_support_until:
                 child_support += child_cost_per_month * 12
         expense += child_support
 
@@ -231,26 +226,44 @@ if st.button("家計管理に進む", type="secondary"):
         if age == retirement_age:
             income += retirement_payout
 
-        # 残高更新
+        # 投資額を引く
+        if start_age <= age < retirement_age:
+            expense += monthly_contribution * 12
+
+        # バランス更新
         balance = balance + income - expense
         balances.append(balance)
         incomes.append(income)
         expenses.append(expense)
 
-    # グラフ描画
+    # ---- 投資リターンとの統合 ----
+    trajectory_50_full = np.zeros_like(balances)
+    trajectory_50_full[:len(trajectory_50)] = trajectory_50
+    combined_trajectory = np.array(balances) + trajectory_50_full
+
+    # ---- グラフ描画 ----
     fig2, ax2 = plt.subplots(figsize=(12, 6))
-    ax2.plot(simulation_years, balances, label="残高の推移", color="blue")
-    ax2.plot(simulation_years, incomes, label="収入", linestyle="--", color="green")
-    ax2.plot(simulation_years, expenses, label="支出", linestyle=":", color="red")
-    ax2.set_title("家計収支シミュレーション")
-    ax2.set_xlabel("年齢 (西暦)")
-    xtick_indices = [i for i, age in enumerate(simulation_years) if age % 5 == 0 or age == start_age]
-    ax2.set_xticks(simulation_years[xtick_indices])
-    ax2.set_xticklabels([f"{age}\n({year})" for age, year in zip(simulation_years[xtick_indices], simulation_calendar[xtick_indices])], fontsize=9)
-    ax2.set_ylabel("金額（万円）")
+    ax2.plot(ages, combined_trajectory, label='家計 + 投資リターン (50%)', color='blue', linewidth=2)
+    ax2.plot(ages, balances, label='家計のみ（投資なし）', color='gray', linestyle='--')
+
+    xtick_indices = [i for i, age in enumerate(ages) if age % 5 == 0 or age == start_age]
+    xticks = ages[xtick_indices]
+    xticklabels = [f"{age}\n({year})" for age, year in zip(ages[xtick_indices], years[xtick_indices])]
+    ax2.set_xticks(xticks)
+    ax2.set_xticklabels(xticklabels, fontsize=10)
+
+    ax2.set_title("家計 + 投資（50パーセンタイル）の統合シミュレーション")
+    ax2.set_xlabel("Age (Year)")
+    ax2.set_ylabel("金額（万円, 実質）")
+    ax2.grid(True, linestyle='--', alpha=0.6)
     ax2.legend()
-    ax2.grid(True)
     st.pyplot(fig2)
 
-    # 注釈：社会保険料は含まれていませんが、生活費から一定割合が含まれると仮定しています。
-    st.caption("※社会保険料は生活費に含まれていると想定。投資額は年60万円で定年まで。年金・退職金は平均的な数値。")
+    # 脚注
+    st.markdown("""
+    **📌注釈**：
+    - 年金は65歳以降、年間200万円を受給。
+    - 退職金は65歳時点で一括2,000万円を受領。
+    - 年金・退職金は平均的な水準で固定されています。
+    - 毎月の投資額（{monthly_contribution}万円）は家計の支出に含まれます。
+    """)
