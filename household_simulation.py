@@ -144,15 +144,17 @@ if st.button("シミュレーションを実行",type = "primary"):
     st.metric("25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
     st.metric("貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
     
+    if st.button("📘 家計シミュレーションに進む"):
+        st.session_state['go_to_household'] = True
     
 # ----------------------------
 # ▶ ステップ2：家計管理シミュレーション
 # ----------------------------
-st.subheader("🏠 ステップ2：家計管理シミュレーション")
 
-if st.button("家計管理シミュレーションに進む", type="primary"):
-    st.markdown("---")
-    st.subheader("📝 家計の入力項目")
+if 'go_to_household' in st.session_state and st.session_state['go_to_household']:
+    # ここで ages と years を定義
+    ages = np.arange(start_age, retirement_age + 1)
+    years = np.arange(start_year, start_year + len(ages))
 
     # ユーザー入力項目（縦並び）
     initial_savings = st.number_input("現在の預金額（万円）", value=300, step=10)
