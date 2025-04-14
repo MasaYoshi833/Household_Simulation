@@ -127,17 +127,23 @@ if st.button("シミュレーションを実行", type="primary"):
     st.metric("25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
     st.metric("貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
 
+    # 結果をセッションに保存
+    st.session_state['trajectory_50'] = trajectory_50.tolist()
+    st.session_state['ages'] = ages.tolist()
+    st.session_state['years'] = years.tolist()
+    st.session_state['monthly_contribution'] = monthly_contribution
+
+    # ボタン押下でフラグ変更＋リラン
     if st.button("家計シミュレーションに進む"):
         st.session_state['go_to_household'] = True
-        st.session_state['ages'] = ages
-        st.session_state['years'] = years
-        st.session_state['trajectory_50'] = trajectory_50
+        st.experimental_rerun()
 
 if 'go_to_household' in st.session_state and st.session_state['go_to_household']:
-
-    ages = st.session_state.get('ages')
-    years = st.session_state.get('years')
-    trajectory_50 = st.session_state.get('trajectory_50')
+    # セッションから値を取得
+    trajectory_50 = np.array(st.session_state['trajectory_50'])
+    ages = np.array(st.session_state['ages'])
+    years = np.array(st.session_state['years'])
+    monthly_contribution = st.session_state['monthly_contribution']
 
     if ages is None or years is None or trajectory_50 is None:
         st.error("ステップ1の結果が見つかりません。もう一度シミュレーションを実行してください。")
