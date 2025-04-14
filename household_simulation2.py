@@ -137,13 +137,13 @@ if st.button("シミュレーションを実行", type="primary"):
     if st.button("家計シミュレーションに進む"):
         st.session_state['go_to_household'] = True
         st.experimental_rerun()
-
-if 'go_to_household' in st.session_state and st.session_state['go_to_household']:
+        
+    if 'go_to_household' in st.session_state and st.session_state['go_to_household']:
     # セッションから値を取得
-    trajectory_50 = np.array(st.session_state['trajectory_50'])
-    ages = np.array(st.session_state['ages'])
-    years = np.array(st.session_state['years'])
-    monthly_contribution = st.session_state['monthly_contribution']
+        trajectory_50 = np.array(st.session_state['trajectory_50'])
+        ages = np.array(st.session_state['ages'])
+        years = np.array(st.session_state['years'])
+        monthly_contribution = st.session_state['monthly_contribution']
 
     if ages is None or years is None or trajectory_50 is None:
         st.error("ステップ1の結果が見つかりません。もう一度シミュレーションを実行してください。")
