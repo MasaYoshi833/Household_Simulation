@@ -139,7 +139,11 @@ if st.button("シミュレーションを実行",type = "primary"):
     ax.plot(years, expenses, label="Expense", color="red", linestyle=':')
     
     # 年齢と西暦を両方表示
-
+    xtick_indices = [i for i, a in enumerate(ages) if a % 5 == 0 or a == start_age]
+    xticks = [years[i] for i in xtick_indices]
+    xticklabels = [f"{ages[i]}歳\n({years[i]})" for i in xtick_indices]
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels, rotation=45, ha='right', fontsize=10)
     
     ax.set_title("Household Balance & Cashflow")
     ax.set_xlabel("Age(Year)")
