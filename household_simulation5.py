@@ -78,7 +78,7 @@ else:
 
 if st.button("シミュレーションを実行",type = "primary"):
     pension_start_age = 65
-    pension_annual = 200
+    pension_annual = 67.2
     retirement_payout = 2000
     income_growth_rate = 0.01
     insurance_until_age = 65
@@ -127,7 +127,7 @@ if st.button("シミュレーションを実行",type = "primary"):
     st.markdown("""
     📌 注
      - 年収は昇給率年間１％、額面の75%が手取りとして計算されます。
-     - 年金は65歳以降、年間200万円を受給。
+     - 年金は65歳以降、月5万6千円を受給。
      - 退職金は65歳で2,000万円を一括受領。
      - 養育費は子供が22歳になるまで一人当たり月10万円の計算。
     """)
@@ -141,7 +141,7 @@ if st.button("シミュレーションを実行",type = "primary"):
     # 年齢と西暦を両方表示
     xtick_indices = [i for i, a in enumerate(ages) if a % 5 == 0 or a == start_age]
     xticks = [years[i] for i in xtick_indices]
-    xticklabels = [f"{ages[i]}歳\n({years[i]})" for i in xtick_indices]
+    xticklabels = [f"{ages[i]}\n({years[i]})" for i in xtick_indices]
     ax.set_xticks(xticks)
     ax.set_xticklabels(xticklabels, rotation=45, ha='right', fontsize=10)
     
