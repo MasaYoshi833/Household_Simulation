@@ -20,10 +20,12 @@ st.subheader("🔧初期設定")
 # 年齢設定
 start_age = st.slider("現在の年齢", min_value=20, max_value=60, value=30)
 retirement_age = 65
-n_years = retirement_age - start_age
-ages = np.arange(start_age, retirement_age + 1)
-years = np.arange(2025, 2025 + len(ages))
-
+start_year = 2025
+end_age = 100
+n_years = end_age - start_age
+n_months = n_years * 12
+ages = np.arange(start_age, end_age + 1)
+years = np.arange(start_year, start_year + n_years + 1)
 
 # 貯蓄・給与
 initial_savings = st.number_input("現在の預金額（万円）", value=400, step=10)
@@ -137,11 +139,7 @@ if st.button("シミュレーションを実行",type = "primary"):
     ax.plot(years, expenses, label="Expense", color="red", linestyle=':')
     
     # 年齢と西暦を両方表示
-    xtick_indices = [i for i, age in enumerate(ages) if age % 5 == 0 or age == start_age]
-    xticks = ages[xtick_indices]
-    xticklabels = [f"{age}\n({year})" for age, year in zip(ages[xtick_indices], years[xtick_indices])]
-    ax.set_xticks(xticks)
-    ax.set_xticklabels(xticklabels, fontsize=10)
+
     
     ax.set_title("Household Balance & Cashflow")
     ax.set_xlabel("Age(Year)")
