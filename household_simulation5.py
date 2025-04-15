@@ -20,12 +20,10 @@ st.subheader("🔧初期設定")
 # 年齢設定
 start_age = st.slider("現在の年齢", min_value=20, max_value=60, value=30)
 retirement_age = 65
-start_year = 2025
-end_age = 100
-n_years = end_age - start_age
-n_months = n_years * 12
-ages = np.arange(start_age, end_age + 1)
-years = np.arange(start_year, start_year + n_years + 1)
+n_years = retirement_age - start_age
+ages = np.arange(start_age, retirement_age + 1)
+years = np.arange(2025, 2025 + len(ages))
+
 
 # 貯蓄・給与
 initial_savings = st.number_input("現在の預金額（万円）", value=400, step=10)
