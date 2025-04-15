@@ -22,11 +22,10 @@ start_age = st.slider("現在の年齢", min_value=20, max_value=60, value=30)
 retirement_age = 65
 start_year = 2025
 end_age = 100
-years = np.arange(start_age, end_age + 1)
 n_years = end_age - start_age
 n_months = n_years * 12
 ages = np.arange(start_age, end_age + 1)
-
+years = np.arange(start_year, start_year + n_years + 1)
 
 # 貯蓄・給与
 initial_savings = st.number_input("現在の預金額（万円）", value=400, step=10)
@@ -54,6 +53,21 @@ else:
     loan_interest_rate = 0.0
     loan_years = 0
 
+# 住宅ローン年間返済額（ローンがある場合のみ計算）
+if use_loan and loan_amount > 0 and loan_interest_rate > 0 and loan_years > 0:
+    def calc_annual_loan_payment(principal, annual_rate, years):
+        monthly_rate = annual_rate / 12
+        n_payments = years * 12
+        if monthly_rate == 0:
+            return principal / years  # 無金利
+        monthly_payment = principal * (monthly_rate * (1 + monthly_rate) ** n_payments) / ((1 + monthly_rate) ** n_payments - 1)
+        return monthly_payment * 12
+
+    loan_annual_payment = calc_annual_loan_payment(loan_amount, loan_interest_rate, loan_years)
+else:
+    loan_annual_payment = 0.0
+
+
 # 保険
 use_insurance = st.checkbox("保険加入あり")
 if use_insurance:
@@ -71,14 +85,6 @@ if st.button("シミュレーションを実行",type = "primary"):
     child_support_until = 22
     child_cost_per_month = 10
 
-
-    def calc_annual_loan_payment(principal, annual_rate, years):
-        monthly_rate = annual_rate / 12
-        n_payments = years * 12
-        monthly_payment = principal * (monthly_rate * (1 + monthly_rate)**n_payments) / ((1 + monthly_rate)**n_payments - 1)
-        return monthly_payment * 12
-
-    loan_annual_payment = calc_annual_loan_payment(loan_amount, loan_interest_rate, loan_years)
 
     balance = initial_savings
     balances = []
@@ -112,14 +118,14 @@ if st.button("シミュレーションを実行",type = "primary"):
         if age == retirement_age:
             income += retirement_payout
 
-        balance += income - expense
+        balance = balance + income - expense
         balances.append(balance)
         incomes.append(income)
         expenses.append(expense)
 
     # 注記を先に表示
     st.markdown("""
-    # 📌 注
+    📌 注
     - 年収は昇給率年間１％、額面の75%が手取りとして計算されます。
     - 年金は65歳以降、年間200万円を受給。
     - 退職金は65歳で2,000万円を一括受領。
