@@ -10,11 +10,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-st.set_page_config(page_title="家計・資産運用シミュレーション", layout="wide")
-st.title("💡家計＆資産運用シミュレーション")
+st.set_page_config(page_title="家計シミュレーション", layout="centered")
+st.title("💡家計シミュレーション")
 
 # 年齢設定
-start_age = st.slider("現在の年齢", min_value=20, max_value=60, value=35)
+start_age = st.slider("現在の年齢", min_value=20, max_value=60, value=30)
 end_age = 100
 years = np.arange(start_age, end_age + 1)
 n_years = end_age - start_age + 1
