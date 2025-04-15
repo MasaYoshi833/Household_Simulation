@@ -125,7 +125,7 @@ if st.button("シミュレーションを実行",type = "primary"):
         
 if st.session_state.get("household_done"):
     # 注記を先に表示
-        st.markdown("""
+    st.markdown("""
     📌 注
      - 年収は昇給率年間１％、額面の75%が手取りとして計算されます。
      - 年金は65歳以降、月5万6千円を受給。
@@ -134,30 +134,30 @@ if st.session_state.get("household_done"):
     """)
 
     # 家計グラフ
-        fig, ax = plt.subplots(figsize=(12, 8))
-        ax.plot(years, balances, label="Balance", color="blue", linewidth=2)
-        ax.plot(years, incomes, label="Income", color="green", linestyle='--')
-        ax.plot(years, expenses, label="Expense", color="red", linestyle=':')
+    fig, ax = plt.subplots(figsize=(12, 8))
+    ax.plot(years, balances, label="Balance", color="blue", linewidth=2)
+    ax.plot(years, incomes, label="Income", color="green", linestyle='--')
+    ax.plot(years, expenses, label="Expense", color="red", linestyle=':')
     
     # 年齢と西暦を両方表示
-        xtick_indices = [i for i, a in enumerate(ages) if a % 5 == 0 or a == start_age]
-        xticks = [years[i] for i in xtick_indices]
-        xticklabels = [f"{ages[i]}\n({years[i]})" for i in xtick_indices]
-        ax.set_xticks(xticks)
-        ax.set_xticklabels(xticklabels, rotation=45, ha='right', fontsize=10)
+    xtick_indices = [i for i, a in enumerate(ages) if a % 5 == 0 or a == start_age]
+    xticks = [years[i] for i in xtick_indices]
+    xticklabels = [f"{ages[i]}\n({years[i]})" for i in xtick_indices]
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels, rotation=45, ha='right', fontsize=10)
     
-        ax.set_title("Household Balance & Cashflow")
-        ax.set_xlabel("Age(Year)")
-        ax.set_ylabel("Amount（10,000Yen）")
-        ax.legend()
-        st.pyplot(fig)
+    ax.set_title("Household Balance & Cashflow")
+    ax.set_xlabel("Age(Year)")
+    ax.set_ylabel("Amount（10,000Yen）")
+    ax.legend()
+    st.pyplot(fig)
 
     # セッションに保存
-        st.session_state['balances'] = balances
-        st.session_state['incomes'] = incomes
-        st.session_state['expenses'] = expenses
-        st.session_state['years'] = years
-        st.session_state['start_age'] = start_age
+    st.session_state['balances'] = balances
+    st.session_state['incomes'] = incomes
+    st.session_state['expenses'] = expenses
+    st.session_state['years'] = years
+    st.session_state['start_age'] = start_age
 
 # Step 2: 資産運用シミュレーション（家計とは独立）
  # ---- 資産運用シミュレーション ----
