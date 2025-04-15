@@ -125,7 +125,6 @@ if st.button("シミュレーションを実行",type = "primary"):
         expenses.append(expense)
 
 if st.session_state.get("household_done"):        
-    # 注記を先に表示
     st.markdown("""
     📌 注
      - 年収は昇給率年間１％、額面の75%が手取りとして計算されます。
