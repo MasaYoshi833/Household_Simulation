@@ -152,12 +152,6 @@ if st.session_state.get("household_done"):
     ax.legend()
     st.pyplot(fig)
 
-    # セッションに保存
-    st.session_state['balances'] = balances
-    st.session_state['incomes'] = incomes
-    st.session_state['expenses'] = expenses
-    st.session_state['years'] = years
-    st.session_state['start_age'] = start_age
 
 # Step 2: 資産運用シミュレーション（家計とは独立）
  # ---- 資産運用シミュレーション ----
