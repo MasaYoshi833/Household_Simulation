@@ -15,13 +15,18 @@ st.title("家計シミュレーション")
 
 
 # 家計入力（Step1）
-st.header("初期設定")
+st.subheader("🔧初期設定")
 
 # 年齢設定
 start_age = st.slider("現在の年齢", min_value=20, max_value=60, value=30)
+retirement_age = 65
+start_year = 2025
 end_age = 100
 years = np.arange(start_age, end_age + 1)
-n_years = end_age - start_age + 1
+n_years = end_age - start_age
+n_months = n_years * 12
+ages = np.arange(start_age, end_age + 1)
+
 
 # 貯蓄・給与
 initial_savings = st.number_input("現在の預金額（万円）", value=400, step=10)
@@ -57,16 +62,15 @@ else:
     insurance_monthly = 0.0
 
 
-if st.button("✅ 家計シミュレーションを実行"):
+if st.button("シミュレーションを実行",type = "primary"):
     pension_start_age = 65
     pension_annual = 200
-    retirement_age = 65
     retirement_payout = 2000
     income_growth_rate = 0.01
     insurance_until_age = 65
     child_support_until = 22
     child_cost_per_month = 10
-    contribution_monthly = 5  # 仮に設定（後で変更）
+
 
     def calc_annual_loan_payment(principal, annual_rate, years):
         monthly_rate = annual_rate / 12
@@ -115,11 +119,11 @@ if st.button("✅ 家計シミュレーションを実行"):
 
     # 注記を先に表示
     st.markdown("""
-    ### ℹ️ 前提条件と注記
-    - 年収は額面の75%が手取りとして計算されます。
-    - 年金は65歳以降、年間200万円。
+    # 📌 注
+    - 年収は昇給率年間１％、額面の75%が手取りとして計算されます。
+    - 年金は65歳以降、年間200万円を受給。
     - 退職金は65歳で2,000万円を一括受領。
-    - 投資シミュレーションの積立は家計支出に含まれます。
+    - 養育費は子供が22歳になるまで一人当たり月10万円の計算。
     """)
 
     # 家計グラフ
@@ -127,11 +131,18 @@ if st.button("✅ 家計シミュレーションを実行"):
     ax.plot(years, balances, label="Balance", color="blue", linewidth=2)
     ax.plot(years, incomes, label="Income", color="green", linestyle='--')
     ax.plot(years, expenses, label="Expense", color="red", linestyle=':')
+    
+    # 年齢と西暦を両方表示
+    xtick_indices = [i for i, age in enumerate(ages) if age % 5 == 0 or age == start_age]
+    xticks = ages[xtick_indices]
+    xticklabels = [f"{age}\n({year})" for age, year in zip(ages[xtick_indices], years[xtick_indices])]
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels, fontsize=10)
+    
     ax.set_title("Household Balance & Cashflow")
     ax.set_xlabel("Age(Year)")
     ax.set_ylabel("Amount（10,000Yen）")
     ax.legend()
-    ax.grid(True, linestyle='--', alpha=0.6)
     st.pyplot(fig)
 
     # セッションに保存
