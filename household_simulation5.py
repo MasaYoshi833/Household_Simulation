@@ -77,6 +77,7 @@ else:
 
 
 if st.button("シミュレーションを実行",type = "primary"):
+    st.session_state["household_done"] = True
     pension_start_age = 65
     pension_annual = 67.2
     retirement_payout = 2000
