@@ -159,42 +159,111 @@ if st.button("シミュレーションを実行",type = "primary"):
     st.session_state['start_age'] = start_age
 
 # Step 2: 資産運用シミュレーション（家計とは独立）
-    st.header("Step 2️⃣ 資産運用シミュレーション")
+    st.header("資産運用シミュレーション")
 
-    invest_start_age = st.number_input("投資開始年齢", min_value=start_age, max_value=65, value=start_age)
-    invest_end_age = st.number_input("投資終了年齢", min_value=invest_start_age, max_value=65, value=65)
-    invest_years = invest_end_age - invest_start_age + 1
+    monthly_contribution = st.slider("月額積立額（万円）", min_value=1, max_value=30, value=5)
+    equity_ratio = st.slider("株式比率(残りは債券)（%）", 0, 100, 50)
 
-    annual_return = st.number_input("想定リターン（年率 %）", value=4.0, step=0.1) / 100
-    invest_contribution = st.number_input("年間積立額（万円）", value=60, step=10)
+    if st.button("シミュレーションを実行",type = "primary"):
+        retirement_age = 65
+        end_age = retirement_age
+        n_years = end_age - start_age
+        n_months = n_years * 12
+        ages = np.arange(start_age, end_age + 1)
+        years = np.arange(start_year, start_year + n_years + 1)
+    
+        equity_return = 0.055
+        bond_return = 0.009
+    
+        real_equity_return = equity_return
+        real_bond_return = bond_return
 
-    invest_values = []
-    invest_balance = 0
-    invest_age_range = np.arange(invest_start_age, invest_end_age + 1)
+        returnYearly = np.array([real_equity_return, real_bond_return])
+        volatilityYearly = np.array([0.23, 0.03])
+        correlation = -0.3
+        corrYearly = np.array([[1, correlation],[correlation, 1]])
 
-    for i, age in enumerate(invest_age_range):
-        invest_balance *= (1 + annual_return)
-        invest_balance += invest_contribution
-        invest_values.append(invest_balance)
+        # 月次変換
+        monthly_returns = returnYearly / 12
+        monthly_volatility = volatilityYearly / np.sqrt(12)
+        cov_matrix = np.diag(monthly_volatility) @ corrYearly @ np.diag(monthly_volatility)
 
-    # 資産運用だけのグラフ（65歳まで）
-    st.subheader("📊 資産運用シミュレーション結果（65歳まで）")
+        # 投資設定
+        weights = np.array([equity_ratio / 100, 1 - (equity_ratio / 100)])
+        n_simulations = 1000
 
-    fig2, ax2 = plt.subplots(figsize=(10, 5))
-    ax2.plot(invest_age_range, invest_values, color="blue", linewidth=2)
-    ax2.set_title("資産運用シミュレーション（65歳まで）")
-    ax2.set_xlabel("年齢")
-    ax2.set_ylabel("運用残高（万円）")
-    ax2.grid(True, linestyle='--', alpha=0.6)
-    st.pyplot(fig2)
+        all_trajectories = np.zeros((n_simulations, n_years + 1))  # 年単位
 
-    # 統合に向けて保存
-    st.session_state['invest_values'] = invest_values
-    st.session_state['invest_ages'] = invest_age_range
-    st.session_state['invest_start_age'] = invest_start_age
+        for i in range(n_simulations):
+            portfolio_value = 0
+            values_by_year = [portfolio_value]
+            returns = np.random.multivariate_normal(monthly_returns, cov_matrix, n_months)
+            for month in range(n_months):
+                monthly_return = np.dot(weights, returns[month])
+                portfolio_value *= (1 + monthly_return)
+                portfolio_value += monthly_contribution
+                if (month + 1) % 12 == 0:
+                    values_by_year.append(portfolio_value)
+            all_trajectories[i, :] = values_by_year
+    
+    # ----------------------------
+    # 📉 パーセンタイル計算
+    # ----------------------------
+        final_values = all_trajectories[:, -1]
+        p25_val = np.percentile(final_values, 25)
+        p50_val = np.percentile(final_values, 50)
+        p75_val = np.percentile(final_values, 75)
+    
+        idx_25 = np.abs(final_values - p25_val).argmin()
+        idx_50 = np.abs(final_values - p50_val).argmin()
+        idx_75 = np.abs(final_values - p75_val).argmin()
+    
+        trajectory_25 = all_trajectories[idx_25]
+        trajectory_50 = all_trajectories[idx_50]
+        trajectory_75 = all_trajectories[idx_75]
+    
+    # ----------------------------
+    # 💹 グラフ描画
+    # ----------------------------
+        fig, ax = plt.subplots(figsize=(12, 8))
 
-# 家計 + 投資シミュレーション（100歳まで）
-st.header("Step 3️⃣ 家計 + 投資シミュレーション（100歳まで）")
+        for i in range(n_simulations):
+            ax.plot(ages, all_trajectories[i], color='gray', alpha=0.03)
+
+        ax.plot(ages, trajectory_75, color='blue', linestyle='dashed', linewidth=2, label='75th Percentile')
+        ax.plot(ages, trajectory_50, color='red', linewidth=2, label='50th Percentile')
+        ax.plot(ages, trajectory_25, color='blue', linestyle='dashed', linewidth=2, label='25th Percentile')
+    
+    # 貯金ケース
+        saving_trajectory = monthly_contribution * 12 * (ages - start_age)
+        ax.plot(ages, saving_trajectory, color='green', linewidth=2, label='Saving Only')
+
+    # 年齢と西暦を両方表示
+        xtick_indices = [i for i, age in enumerate(ages) if age % 5 == 0 or age == start_age]
+        xticks = ages[xtick_indices]
+        xticklabels = [f"{age}\n({year})" for age, year in zip(ages[xtick_indices], years[xtick_indices])]
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(xticklabels, fontsize=10)
+    
+    # Y軸の上限を85パーセンタイルで設定
+        y_max = np.percentile(final_values, 85)
+        ax.set_ylim(0, y_max * 1.05)  # 少し余白
+    
+        ax.set_xlabel("Age(Year)")
+        ax.set_ylabel("Amount (10,000 Yen)")
+        ax.set_title("Investment Simulation")
+        ax.legend()
+        st.pyplot(fig)
+
+    # ----------------------------
+    # 🧾 結果数値の表示
+    # ----------------------------
+        st.markdown("### 💰 最終積立額（定年時）")
+        st.metric("75パーセンタイル", f"{trajectory_75[-1]:,.0f} 万円")
+        st.metric("50パーセンタイル（中央値）", f"{trajectory_50[-1]:,.0f} 万円")
+        st.metric("25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
+        st.metric("貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
+
 
 if st.button("💡 シミュレーション実行"):
     # 入力取得
