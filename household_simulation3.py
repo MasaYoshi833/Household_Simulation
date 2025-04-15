@@ -11,7 +11,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 st.set_page_config(page_title="家計シミュレーション", layout="centered")
-st.title("💡家計シミュレーション")
+st.title("家計シミュレーション")
+
+
+# 家計入力（Step1）
+st.header("初期設定")
 
 # 年齢設定
 start_age = st.slider("現在の年齢", min_value=20, max_value=60, value=30)
@@ -19,27 +23,39 @@ end_age = 100
 years = np.arange(start_age, end_age + 1)
 n_years = end_age - start_age + 1
 
-# 家計入力（Step1）
-st.header("Step 1️⃣ 家計管理の設定")
+# 貯蓄・給与
+initial_savings = st.number_input("現在の預金額（万円）", value=400, step=10)
+annual_income = st.number_input("現在の年収（万円）", value=450, step=10)
+monthly_expense = st.number_input("月々の生活費（万円）", value=10, step=1)
 
-initial_savings = st.number_input("現在の預金額（万円）", value=300, step=10)
-annual_income = st.number_input("現在の年収（万円）", value=600, step=10)
-monthly_expense = st.number_input("月々の生活費（万円）", value=25, step=1)
-
-# 子供の入力（改良）
+# 養育費
 num_children = st.selectbox("子供の人数", [0, 1, 2], index=0)
 child_birth_ages = []
 if num_children > 0:
-    st.markdown("#### 👶 各子供の出生時の親の年齢（現在より前でもOK）")
+    st.markdown("#### 各子供の出生時の年齢")
     for i in range(num_children):
         default_age = start_age if start_age > 25 else 25
         birth_age = st.slider(f"子供{i+1}の出生時の親の年齢", min_value=20, max_value=60, value=default_age)
         child_birth_ages.append(birth_age)
 
-loan_amount = st.number_input("住宅ローン借入額（万円）", value=3000, step=100)
-loan_interest_rate = st.number_input("ローン金利（年率 %）", value=1.0, step=0.1) / 100
-loan_years = st.number_input("返済期間（年）", value=35, step=1)
-insurance_monthly = st.number_input("保険料（月額万円）", value=1.0, step=0.1)
+#　住宅ローン
+use_loan = st.checkbox("住宅ローンあり")
+if use_loan:
+    loan_amount = st.number_input("住宅ローン借入額（万円）", value=3000, step=100)
+    loan_interest_rate = st.number_input("ローン金利（年率 %）", value=1.0, step=0.1) / 100
+    loan_years = st.number_input("返済期間（年）", value=35, step=1)
+else:
+    loan_amount = 0
+    loan_interest_rate = 0.0
+    loan_years = 0
+
+# 保険
+use_insurance = st.checkbox("保険加入あり")
+if use_insurance:
+    insurance_monthly = st.number_input("保険料（月額万円）", value=1.0, step=0.1)
+else:
+    insurance_monthly = 0.0
+
 
 if st.button("✅ 家計シミュレーションを実行"):
     pension_start_age = 65
@@ -107,13 +123,13 @@ if st.button("✅ 家計シミュレーションを実行"):
     """)
 
     # 家計グラフ
-    fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(years, balances, label="家計残高", color="gray", linewidth=2)
-    ax.plot(years, incomes, label="年収（手取り）", color="green", linestyle='--')
-    ax.plot(years, expenses, label="年間支出", color="red", linestyle=':')
-    ax.set_title("家計キャッシュフローと残高（100歳まで）")
-    ax.set_xlabel("年齢")
-    ax.set_ylabel("金額（万円）")
+    fig, ax = plt.subplots(figsize=(12, 8))
+    ax.plot(years, balances, label="Balance", color="blue", linewidth=2)
+    ax.plot(years, incomes, label="Income", color="green", linestyle='--')
+    ax.plot(years, expenses, label="Expense", color="red", linestyle=':')
+    ax.set_title("Household Balance & Cashflow")
+    ax.set_xlabel("Age(Year)")
+    ax.set_ylabel("Amount（10,000Yen）")
     ax.legend()
     ax.grid(True, linestyle='--', alpha=0.6)
     st.pyplot(fig)
