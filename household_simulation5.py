@@ -124,6 +124,11 @@ if st.button("シミュレーションを実行",type = "primary"):
         incomes.append(income)
         expenses.append(expense)
 
+    st.session_state["years"] = years
+    st.session_state["balances"] = balances
+    st.session_state["incomes"] = incomes
+    st.session_state["expenses"] = expenses
+
 if st.session_state.get("household_done"):        
     st.markdown("""
     📌 注
@@ -132,6 +137,11 @@ if st.session_state.get("household_done"):
      - 退職金は65歳で2,000万円を一括受領。
      - 養育費は子供が22歳になるまで一人当たり月10万円の計算。
     """)
+
+    years = st.session_state.get("years", [])
+    balances = st.session_state.get("balances", [])
+    incomes = st.session_state.get("incomes", [])
+    expenses = st.session_state.get("expenses", [])
 
     # 家計グラフ
     fig, ax = plt.subplots(figsize=(12, 8))
