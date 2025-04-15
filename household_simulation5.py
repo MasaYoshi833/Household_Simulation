@@ -8,7 +8,7 @@ Created on Wed Apr 16 00:09:17 2025
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
+
 
 st.set_page_config(page_title="家計シミュレーション", layout="centered")
 st.title("家計シミュレーション")
@@ -30,7 +30,7 @@ years = np.arange(start_year, start_year + n_years + 1)
 # 貯蓄・給与
 initial_savings = st.number_input("現在の預金額（万円）", value=400, step=10)
 annual_income = st.number_input("現在の年収（万円）", value=450, step=10)
-monthly_expense = st.number_input("月々の生活費（万円）", value=10, step=1)
+monthly_expense = st.number_input("月々の生活費（万円）", value=15, step=1)
 
 # 養育費
 num_children = st.selectbox("子供の人数", [0, 1, 2], index=0)
@@ -164,7 +164,7 @@ if st.button("シミュレーションを実行",type = "primary"):
     monthly_contribution = st.slider("月額積立額（万円）", min_value=1, max_value=30, value=5)
     equity_ratio = st.slider("株式比率(残りは債券)（%）", 0, 100, 50)
 
-    if st.button("シミュレーションを実行",type = "primary"):
+    if st.button("シミュレーションを実行"):
         retirement_age = 65
         end_age = retirement_age
         n_years = end_age - start_age
@@ -264,108 +264,4 @@ if st.button("シミュレーションを実行",type = "primary"):
         st.metric("25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
         st.metric("貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
 
-
-if st.button("💡 シミュレーション実行"):
-    # 入力取得
-    start_age = st.session_state["start_age"]
-    current_year = st.session_state["current_year"]
-    retirement_age = st.session_state["retirement_age"]
-    salary = st.session_state["annual_income"]
-    salary_growth = st.session_state["salary_growth_rate"]
-    living_expense = st.session_state["living_expense"]
-    pension = st.session_state["pension"]
-    lump_sum_retirement = st.session_state["lump_sum_retirement"]
-    loan_amount = st.session_state["loan_amount"]
-    loan_rate = st.session_state["loan_rate"]
-    loan_term_years = st.session_state["loan_term_years"]
-    loan_start_age = st.session_state["loan_start_age"]
-    children_birth_ages = st.session_state.get("children_birth_ages", [])
-    monthly_insurance = st.session_state["monthly_insurance"]
-
-    # 投資結果
-    invest_ages = st.session_state.get("invest_ages", [])
-    invest_values = st.session_state.get("invest_values", [])
-    invest_map = dict(zip(invest_ages, invest_values))
-
-    # 年齢のレンジ
-    ages = np.arange(start_age, 101)
-    n_years = len(ages)
-
-    # ローン返済額
-    if loan_amount > 0:
-        r = loan_rate
-        n = loan_term_years
-        annual_loan_payment = loan_amount * r * (1 + r) ** n / ((1 + r) ** n - 1)
-    else:
-        annual_loan_payment = 0
-
-    # 初期化
-    income = np.zeros(n_years)
-    expense = np.zeros(n_years)
-    balance = np.zeros(n_years)
-    cumulative_balance = np.zeros(n_years)
-    investment = np.zeros(n_years)
-    total_asset = np.zeros(n_years)
-
-    for i, age in enumerate(ages):
-        # 収入
-        if age < retirement_age:
-            income[i] = salary * 0.75  # 手取り
-            salary *= (1 + salary_growth)
-        elif age == retirement_age:
-            income[i] = lump_sum_retirement
-        else:
-            income[i] = pension
-
-        # 支出
-        exp = living_expense + (income[i] * 0.15) + (monthly_insurance * 12)
-
-        if loan_amount > 0 and loan_start_age <= age < loan_start_age + loan_term_years:
-            exp += annual_loan_payment
-
-        for birth_age in children_birth_ages:
-            child_age = age - birth_age
-            if 0 <= child_age < 22:
-                exp += 120  # 月10万円×12ヶ月
-
-        expense[i] = exp
-        balance[i] = income[i] - expense[i]
-        cumulative_balance[i] = cumulative_balance[i - 1] + balance[i] if i > 0 else balance[i]
-        investment[i] = invest_map.get(age, invest_values[-1] if invest_values else 0)
-        total_asset[i] = cumulative_balance[i] + investment[i]
-
-    # 注記
-    st.markdown("**注記：**")
-    st.markdown("- 手取りは給与の75%で計算")
-    st.markdown(f"- 昇給率：年 {salary_growth * 100:.1f}%")
-    st.markdown(f"- 年金：{pension:.0f} 万円／年（65歳から）")
-    st.markdown(f"- 退職金：{lump_sum_retirement:.0f} 万円（{retirement_age}歳）")
-    st.markdown("- 社会保険料は手取りの15%と仮定")
-
-    # グラフ
-    st.subheader("📊 家計 + 投資シミュレーション結果")
-    fig, ax = plt.subplots(figsize=(12, 5))
-    ax.plot(ages, cumulative_balance, label="家計キャッシュフロー", color="green")
-    ax.plot(ages, investment, label="運用資産", color="blue", linestyle="--")
-    ax.plot(ages, total_asset, label="合計資産", color="orange", linewidth=2)
-    ax.set_xlabel("年齢")
-    ax.set_ylabel("金額（万円）")
-    ax.set_title("年齢別資産推移（100歳まで）")
-    ax.grid(True, linestyle='--', alpha=0.5)
-    ax.legend()
-    st.pyplot(fig)
-
-    # 表
-    df = pd.DataFrame({
-        "年齢": ages,
-        "西暦": current_year + (ages - start_age),
-        "収入": income,
-        "支出": expense,
-        "年間収支": balance,
-        "累積収支": cumulative_balance,
-        "運用資産": investment,
-        "合計資産": total_asset
-    })
-    st.subheader("📋 年次キャッシュフロー表")
-    st.dataframe(df.style.format("{:,.0f}"), use_container_width=True)
 
