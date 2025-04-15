@@ -91,7 +91,7 @@ if st.button("シミュレーションを実行",type = "primary"):
     incomes = []
     expenses = []
 
-    for i, age in enumerate(zip(ages, years)):
+    for age,year in enumerate(zip(ages, years)):
         year_index = age - start_age
 
         if age < retirement_age:
