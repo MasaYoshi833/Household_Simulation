@@ -208,11 +208,12 @@ if st.session_state.get("household_done"):
         ax.legend()
         st.pyplot(fig)
 
-        st.markdown("###　　　定年時積立額")
-        st.metric("　　75パーセンタイル", f"{trajectory_75[-1]:,.0f} 万円")
-        st.metric("　　50パーセンタイル（中央値）", f"{trajectory_50[-1]:,.0f} 万円")
-        st.metric("　　25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
-        st.metric("　　貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
+        st.markdown("### 最終積立額（定年時）")
+        st.markdown(f"💡 **75パーセンタイル**: `{trajectory_75[-1]:,.0f} 万円`")
+        st.metric("75パーセンタイル", f"{trajectory_75[-1]:,.0f} 万円")
+        st.metric("50パーセンタイル（中央値）", f"{trajectory_50[-1]:,.0f} 万円")
+        st.metric("25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
+        st.metric("貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
 
         # ✅ 統合グラフ（100歳まで）
         adjusted_balances = []
