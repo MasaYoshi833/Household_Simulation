@@ -137,7 +137,7 @@ if st.session_state.get("household_done"):
     deficit_range = detect_deficit_period(st.session_state["balances"], st.session_state.ages)
 
     if deficit_range:        
-        st.markdown(
+        st.error(
             f"""
             <span style='color:red; font-weight:bold;'>
             ⚠️ あなたのライフプランでは、{deficit_range[0]}歳で家計が赤字になります。生活費を見直す、収入を増やすなどの対策が必要です。以下では、積立投資による資産形成を行った場合の改善シミュレーションをご覧いただけます。
@@ -146,16 +146,7 @@ if st.session_state.get("household_done"):
             unsafe_allow_html=True
         )
 
-    else:
-        st.markdown(
-            f"""
-            <span style='color:green; font-weight:bold;'>
-            ✅ あなたのライフプランでは、家計が赤字になることはありません。ただし本結果はシミュレーションであり、実際の将来を保証するものではありません。
-            </span>
-             """,
-            unsafe_allow_html=True
-        )
-        
+    else:        
         st.success(
             f"""
             ✅ あなたのライフプランでは、家計が赤字になることはありません。ただし本結果はシミュレーションであり、実際の将来を保証するものではありません。
@@ -290,7 +281,7 @@ if st.session_state.get("household_done"):
         first_deficit_age = detect_first_deficit(integrated_total, st.session_state.ages)
 
         if first_deficit_age:
-            st.markdown(
+            st.error(
                 f"""
                 <span style='color:red; font-weight:bold;'>
                 ⚠️ 積立投資後のライフプランでも、{first_deficit_age}歳で家計が赤字になります。支出の見直しや資産運用のプラン変更等を検討してみてください。
@@ -299,7 +290,7 @@ if st.session_state.get("household_done"):
                 unsafe_allow_html=True
             )
         else:
-            st.markdown(
+            st.success(
                 f"""
                 <span style='color:green; font-weight:bold;'>
                 ✅ 積立投資後のライフプランでは、家計が赤字になることはありません。ただし本結果はシミュレーションであり、実際の将来を保証するものではありません。
