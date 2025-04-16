@@ -32,7 +32,7 @@ monthly_expense = st.number_input("月々の生活費（万円）", value=15, st
 num_children = st.selectbox("子供の人数", [0, 1, 2, 3], index=0)
 child_birth_ages = []
 if num_children > 0:
-    st.markdown("##子供の出生時の年齢")
+    st.markdown("#### 子供出生時の年齢")
     for i in range(num_children):
         default_age = start_age if start_age > 25 else 25
         birth_age = st.slider(f"子供{i+1}の出生時の親の年齢", min_value=20, max_value=60, value=default_age)
@@ -121,8 +121,8 @@ if st.button("シミュレーションを実行", type="primary"):
 if st.session_state.get("household_done"):
     st.markdown("""
     📌 注記  
-     - 年収は額面の75%を手取り（25%は社会保険料・税金）、昇給率年間１％として計算。  
-     - 年金（国民年金のみ）は65歳以降、月5万6千円を受給。  
+     - 年収は額面の75%を手取り（25%は社会保険料・税金）、昇給率１％(年率)として計算。  
+     - 年金（国民年金のみ）は65歳以降、月5万6千円を受給する計算。  
      - 退職金は65歳で2,000万円を一括受領。  
      - 教育費は子供が22歳になるまで一人当たり月10万円の計算。
     """)
@@ -259,3 +259,33 @@ if st.session_state.get("household_done"):
         ax.set_title("Integrated Simulation (Household + Investment)", fontsize=16)
         ax.legend(fontsize=12)
         st.pyplot(fig)
+        
+        # 統合グラフの赤字検出
+        def detect_first_deficit(balances, ages):
+            for age, balance in zip(ages, balances):
+                if balance < 0:
+                    return age
+            return None
+
+        first_deficit_age = detect_first_deficit(integrated_total, st.session_state.ages)
+
+        if first_deficit_age:
+            st.markdown(
+                f"""
+                <span style='color:red; font-weight:bold;'>
+                ⚠️ 積立投資後のライフプランでも、{first_deficit_age}歳で家計が赤字に転落します。<br>
+                投資額や支出の見直しを検討してみてください。
+                </span>
+                """,
+                unsafe_allow_html=True
+            )
+        else:
+            st.markdown(
+                f"""
+                <span style='color:green; font-weight:bold;'>
+                ✅ 積立投資後のライフプランでは、家計が赤字になることはありません。<br>
+                ただし本結果はシミュレーションであり、実際の将来を保証するものではありません。
+                </span>
+                """,
+                unsafe_allow_html=True
+            )
