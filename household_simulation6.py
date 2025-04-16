@@ -111,6 +111,8 @@ if st.button("シミュレーションを実行", type="primary"):
         expenses.append(expense)
 
     st.session_state["balances"] = balances
+    st.session_state["incomes"] = incomes
+    st.session_state["expenses"] = expenses
     st.session_state["ages"] = ages
     st.session_state["years"] = years
 
