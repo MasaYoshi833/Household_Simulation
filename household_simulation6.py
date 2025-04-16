@@ -28,7 +28,7 @@ initial_savings = st.number_input("現在の預金額（万円）", value=400, s
 annual_income = st.number_input("現在の年収（万円）", value=450, step=10)
 monthly_expense = st.number_input("月々の生活費（万円）", value=15, step=1)
 
-# 養育費
+# 教育費
 num_children = st.selectbox("子供の人数", [0, 1, 2], index=0)
 child_birth_ages = []
 if num_children > 0:
@@ -127,8 +127,8 @@ if st.session_state.get("household_done"):
 
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.plot(st.session_state["years"], st.session_state["balances"], label="Balance", color="blue", linewidth=2)
-    ax.plot(st.session_state["years"], incomes, label="Income", color="green", linestyle='--')
-    ax.plot(st.session_state["years"], expenses, label="Expense", color="red", linestyle=':')
+    ax.plot(st.session_state["years"], st.session_state["incomes"], label="Income", color="green", linestyle='--')
+    ax.plot(st.session_state["years"], st.session_state["expenses"], label="Expense", color="red", linestyle=':')
     xtick_indices = [i for i, a in enumerate(st.session_state["ages"]) if a % 5 == 0 or a == start_age]
     ax.set_xticks(st.session_state["years"][xtick_indices])
     ax.set_xticklabels([f"{a}\n({y})" for a, y in zip(st.session_state["ages"][xtick_indices], st.session_state["years"][xtick_indices])], rotation=45)
