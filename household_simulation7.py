@@ -225,7 +225,7 @@ if st.session_state.get("household_done"):
             adjusted_balances.append(balance)
 
         # 投資50パーセンタイルとの合算（家計に含まれない投資資産）
-        integrated_total = [adj_bal + val for adj_bal, val in zip(adjusted_balances, st.session_state.percentile_50)]
+        integrated_total = [adj_bal + val for adj_bal, val in zip(adjusted_balances, trajectory_50)]
 
         # 統合グラフの描画
         fig, ax = plt.subplots(figsize=(12, 8))
