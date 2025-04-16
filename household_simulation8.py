@@ -32,7 +32,7 @@ monthly_expense = st.number_input("月々の生活費（万円）", value=15, st
 num_children = st.selectbox("子供の人数", [0, 1, 2, 3], index=0)
 child_birth_ages = []
 if num_children > 0:
-    st.markdown("#### 子供出生時の年齢")
+    st.markdown('<p style="font-size:16px; font-weight:bold;">子供出生時の年齢</p>', unsafe_allow_html=True)
     for i in range(num_children):
         default_age = start_age if start_age > 25 else 25
         birth_age = st.slider(f"子供{i+1}の出生時の親の年齢", min_value=20, max_value=60, value=default_age)
@@ -243,11 +243,11 @@ if st.session_state.get("household_done"):
         ax.legend(fontsize=12)
         st.pyplot(fig)
 
-        st.markdown("### 最終積立額（定年時）")
-        st.markdown(f"💡 **75パーセンタイル**: `{trajectory_75[-1]:,.0f} 万円`")
-        st.markdown(f"💡 **50パーセンタイル**: `{trajectory_50[-1]:,.0f} 万円`")
-        st.markdown(f"💡 **25パーセンタイル**: `{trajectory_25[-1]:,.0f} 万円`")
-        st.markdown(f"💡 **貯金のみの場合**: `{saving_trajectory[-1]:,.0f} 万円`")
+        st.markdown('<p style="font-size:16px; font-weight:bold;">最終積立額（定年時）</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:black;">💡 <strong>75パーセンタイル</strong>: {trajectory_75[-1]:,.0f} 万円</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:black;">💡 <strong>50パーセンタイル</strong>: {trajectory_50[-1]:,.0f} 万円</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:black;">💡 <strong>25パーセンタイル</strong>: {trajectory_25[-1]:,.0f} 万円</p>', unsafe_allow_html=True)
+        st.markdown(f'<p style="color:black;">💡 <strong>貯金のみの場合</strong>: {saving_trajectory[-1]:,.0f} 万円</p>', unsafe_allow_html=True)
 
 
         # ✅ 統合グラフ（100歳まで）
