@@ -147,10 +147,10 @@ if st.session_state.get("household_done"):
     equity_ratio = st.slider("株式比率(残りは債券)（%）", 0, 100, 50)
 
     st.markdown("""
-    📌 注記  
-      - *株式はリターン：5.5%、リスク:23%（年率）
-      - *債券はリターン：0.9%、リスク:3%（年率）
-      - *株式と債券の相関*：-0.3
+    📌 シミュレーションの前提  
+      - 株式はリターン：5.5%、リスク:23%（年率）
+      - 債券はリターン：0.9%、リスク:3%（年率）
+      - 株式と債券の相関は-0.3
     """)
 
     if st.button("資産運用シミュレーションを実行", key="run_investment"):
@@ -208,11 +208,11 @@ if st.session_state.get("household_done"):
         ax.legend()
         st.pyplot(fig)
 
-        st.markdown("#　定年時積立額")
-        st.metric("75パーセンタイル", f"{trajectory_75[-1]:,.0f} 万円")
-        st.metric("50パーセンタイル（中央値）", f"{trajectory_50[-1]:,.0f} 万円")
-        st.metric("25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
-        st.metric("貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
+        st.markdown("###　　　定年時積立額")
+        st.metric("　　75パーセンタイル", f"{trajectory_75[-1]:,.0f} 万円")
+        st.metric("　　50パーセンタイル（中央値）", f"{trajectory_50[-1]:,.0f} 万円")
+        st.metric("　　25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
+        st.metric("　　貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
 
         # ✅ 統合グラフ（100歳まで）
         adjusted_balances = []
@@ -236,18 +236,18 @@ if st.session_state.get("household_done"):
 
         # 統合グラフの描画
         fig, ax = plt.subplots(figsize=(12, 8))
-        ax.plot(st.session_state.years, integrated_total, label="Balance (with Investment Median)", color="orange", linewidth=2)
+        ax.plot(st.session_state.years, integrated_total, label="Balance (with Investment(Median))", color="red", linewidth=2)
         ax.plot(st.session_state.years, adjusted_balances, label="Balance (without Investment)", linestyle="--", color="blue")
 
         # X軸：年齢と西暦を併記、5歳刻みで表示
         xtick_indices = [i for i, age in enumerate(st.session_state.ages) if age % 5 == 0 or age == st.session_state.ages[0]]
         xticks = [st.session_state.years[i] for i in xtick_indices]
-        xticklabels = [f"{st.session_state.ages[i]}歳\n({st.session_state.years[i]})" for i in xtick_indices]
+        xticklabels = [f"{st.session_state.ages[i]}\n({st.session_state.years[i]})" for i in xtick_indices]
         ax.set_xticks(xticks)
         ax.set_xticklabels(xticklabels, rotation=45)
 
         ax.set_xlabel("Age(Year)")
         ax.set_ylabel("Amount (10,000 Yen)")
-        ax.set_title("Integrated Simulation (Household + Investment)", fontsize=10)
-        ax.legend(fontsize=10)
+        ax.set_title("Integrated Simulation (Household + Investment)", fontsize=16)
+        ax.legend(fontsize=12)
         st.pyplot(fig)
