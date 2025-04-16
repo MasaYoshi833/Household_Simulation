@@ -41,9 +41,9 @@ if num_children > 0:
 # 住宅ローン
 use_loan = st.checkbox("住宅ローンあり")
 if use_loan:
-    loan_amount = st.number_input("住宅ローン借入額（万円）", value=3000, step=100)
+    loan_amount = st.number_input("住宅ローン残高（万円）", value=3000, step=100)
     loan_interest_rate = st.number_input("ローン金利（年率 %）", value=1.0, step=0.1) / 100
-    loan_years = st.number_input("返済期間（年）", value=35, step=1)
+    loan_years = st.number_input("残済期間（年）", value=35, step=1)
 else:
     loan_amount = 0
     loan_interest_rate = 0.0
@@ -124,7 +124,7 @@ if st.session_state.get("household_done"):
      - 年収は額面の75%を手取り（25%は社会保険料・税金）、昇給率１％(年率)として計算。  
      - 年金（国民年金のみ）は65歳以降、月5万6千円を受給する計算。  
      - 退職金は65歳で2,000万円を一括受領。  
-     - 教育費は子供が22歳になるまで一人当たり月10万円の計算。
+     - 教育費は子供が22歳になるまで一人当たり月10万円で計算。
     """)
 
     # 赤字期間の検出
@@ -140,7 +140,7 @@ if st.session_state.get("household_done"):
         st.markdown(
             f"""
             <span style='color:red; font-weight:bold;'>
-            ⚠️ あなたのライフプランでは、{deficit_range[0]}歳〜{deficit_range[1]}歳の間、家計が赤字になります。生活費を見直す、収入を増やすなどの対策が必要です。以下では、積立投資による資産形成を行った場合の改善シミュレーションをご覧いただけます。
+            ⚠️ あなたのライフプランでは、{deficit_range[0]}歳で家計が赤字になります。生活費を見直す、収入を増やすなどの対策が必要です。以下では、積立投資による資産形成を行った場合の改善シミュレーションをご覧いただけます。
             </span>
             """,
             unsafe_allow_html=True
@@ -183,9 +183,10 @@ if st.session_state.get("household_done"):
 
     st.markdown("""
     📌 注記  
-      - 株式はリターン：5.5%、リスク:23%（年率）で計算。
-      - 債券はリターン：0.9%、リスク:3%（年率）で計算。
+      - 株式はリターン：5.5%（年率）、リスク:23%（年率）で計算。
+      - 債券はリターン：0.9%（年率）、リスク:3%（年率）で計算。
       - 株式と債券の相関は-0.3で計算。
+      - 毎月1,000回のモンテカルロシミュレーションを退職（65歳）まで繰り返した結果を表示します。
     """)
 
     if st.button("資産運用シミュレーションを実行", key="run_investment"):
