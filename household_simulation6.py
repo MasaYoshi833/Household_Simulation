@@ -212,13 +212,12 @@ if st.session_state.get("household_done"):
         household_balances = np.array(st.session_state["balances"])
         integrated = household_balances + full_trajectory
 
-        st.header("📊 統合グラフ（家計 + 資産運用）")
+        st.header("統合グラフ（家計 + 資産運用）")
         fig, ax = plt.subplots(figsize=(12, 8))
-        ax.plot(ages, household_balances, label="家計", color="blue", linestyle="--")
-        ax.plot(ages, full_trajectory, label="資産運用（中央値）", color="red", linestyle=":")
-        ax.plot(ages, integrated, label="統合結果", color="black", linewidth=2)
+        ax.plot(ages, household_balances, label="No investment", color="blue", linestyle="--")
+        ax.plot(ages, integrated, label="Balance (with Investment)", color="blue", linewidth=2)
 
-        xtick_indices = [i for i, a in enumerate(ages) if a % 5 == 0 or a == start_age]
+        xtick_indices = [i for i, a in enumerate(st.session_state["ages"]) if a % 5 == 0 or a == start_age]
         ax.set_xticks(ages[xtick_indices])
         ax.set_xticklabels([f"{a}\n({start_year + a - start_age})" for a in xtick_indices])
         ax.set_xlabel("Age(Year)")
