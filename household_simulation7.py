@@ -130,7 +130,7 @@ if st.session_state.get("household_done"):
     ax.plot(st.session_state["years"], st.session_state["balances"], label="Balance", color="blue", linewidth=2)
     ax.plot(st.session_state["years"], st.session_state["incomes"], label="Income", color="green", linestyle='--')
     ax.plot(st.session_state["years"], st.session_state["expenses"], label="Expense", color="red", linestyle=':')
-    ax.axhline(y=0, color='black', linewidth=1, linestyle='--')
+    ax.axhline(y=0, color='black', linewidth=1)
     xtick_indices = [i for i, a in enumerate(st.session_state["ages"]) if a % 5 == 0 or a == start_age]
     ax.set_xticks(st.session_state["years"][xtick_indices])
     ax.set_xticklabels([f"{a}\n({y})" for a, y in zip(st.session_state["ages"][xtick_indices], st.session_state["years"][xtick_indices])], rotation=45)
@@ -241,9 +241,9 @@ if st.session_state.get("household_done"):
         # 統合グラフの描画
         fig, ax = plt.subplots(figsize=(12, 8))
         ax.plot(st.session_state.years, integrated_total, label="Balance (with Investment(Median))", color="red", linewidth=2)
-        ax.plot(st.session_state.years, adjusted_balances, label="Balance (without Investment)", linestyle="--", color="blue")
+        ax.plot(st.session_state.years, st.session_state["balances"], label="Balance (without Investment)", linestyle="--", color="blue")
 
-        ax.axhline(y=0, color='black', linewidth=1, linestyle='--')
+        ax.axhline(y=0, color='black', linewidth=1)
 
         # X軸：年齢と西暦を併記、5歳刻みで表示
         xtick_indices = [i for i, age in enumerate(st.session_state.ages) if age % 5 == 0 or age == st.session_state.ages[0]]
