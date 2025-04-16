@@ -29,10 +29,10 @@ annual_income = st.number_input("現在の年収（万円）", value=450, step=1
 monthly_expense = st.number_input("月々の生活費（万円）", value=15, step=1)
 
 # 教育費
-num_children = st.selectbox("子供の人数", [0, 1, 2], index=0)
+num_children = st.selectbox("子供の人数", [0, 1, 2, 3], index=0)
 child_birth_ages = []
 if num_children > 0:
-    st.markdown("#### 各子供の出生時の年齢")
+    st.markdown("##子供の出生時の年齢")
     for i in range(num_children):
         default_age = start_age if start_age > 25 else 25
         birth_age = st.slider(f"子供{i+1}の出生時の親の年齢", min_value=20, max_value=60, value=default_age)
@@ -118,11 +118,11 @@ if st.button("シミュレーションを実行", type="primary"):
 
 if st.session_state.get("household_done"):
     st.markdown("""
-    📌 注  
-     - 年収は昇給率年間１％、額面の75%が手取りとして計算されます。  
-     - 年金は65歳以降、月5万6千円を受給。  
+    📌 注記  
+     - 年収は額面の75%を手取り（25%は社会保険料・税金）、昇給率年間１％として計算。  
+     - 年金（国民年金のみ）は65歳以降、月5万6千円を受給。  
      - 退職金は65歳で2,000万円を一括受領。  
-     - 養育費は子供が22歳になるまで一人当たり月10万円の計算。
+     - 教育費は子供が22歳になるまで一人当たり月10万円の計算。
     """)
 
     fig, ax = plt.subplots(figsize=(12, 8))
@@ -144,6 +144,13 @@ if st.session_state.get("household_done"):
 
     monthly_contribution = st.slider("月額積立額（万円）", 1, 30, 5)
     equity_ratio = st.slider("株式比率(残りは債券)（%）", 0, 100, 50)
+
+    st.markdown("""
+    📌 注記  
+      - *株式はリターン：5.5%、リスク:23%（年率）
+      - *債券はリターン：0.9%、リスク:3%（年率）
+      - *株式と債券の相関*：-0.3
+    """)
 
     if st.button("資産運用シミュレーションを実行", key="run_investment"):
         invest_years = retirement_age - start_age
@@ -200,7 +207,7 @@ if st.session_state.get("household_done"):
         ax.legend()
         st.pyplot(fig)
 
-        st.markdown("### 💰 最終積立額（定年時）")
+        st.markdown("#　定年時積立額")
         st.metric("75パーセンタイル", f"{trajectory_75[-1]:,.0f} 万円")
         st.metric("50パーセンタイル（中央値）", f"{trajectory_50[-1]:,.0f} 万円")
         st.metric("25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
@@ -214,8 +221,8 @@ if st.session_state.get("household_done"):
 
         st.header("統合グラフ（家計 + 資産運用）")
         fig, ax = plt.subplots(figsize=(12, 8))
+        ax.plot(ages, integrated, label="Balance (with Investment(Median))", color="blue", linewidth=2)
         ax.plot(ages, household_balances, label="No investment", color="blue", linestyle="--")
-        ax.plot(ages, integrated, label="Balance (with Investment)", color="blue", linewidth=2)
 
         xtick_indices = [i for i, a in enumerate(st.session_state["ages"]) if a % 5 == 0 or a == start_age]
         ax.set_xticks(ages[xtick_indices])
