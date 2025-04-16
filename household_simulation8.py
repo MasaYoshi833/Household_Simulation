@@ -136,7 +136,7 @@ if st.session_state.get("household_done"):
     
     deficit_range = detect_deficit_period(st.session_state["balances"], st.session_state.ages)
 
-    if deficit_range:
+    if deficit_range:        
         st.markdown(
             f"""
             <span style='color:red; font-weight:bold;'>
@@ -154,6 +154,12 @@ if st.session_state.get("household_done"):
             </span>
              """,
             unsafe_allow_html=True
+        )
+        
+        st.success(
+            f"""
+            ✅ あなたのライフプランでは、家計が赤字になることはありません。ただし本結果はシミュレーションであり、実際の将来を保証するものではありません。
+             """,
         )
 
 
