@@ -234,3 +234,25 @@ if st.session_state.get("household_done"):
         st.metric("25パーセンタイル", f"{trajectory_25[-1]:,.0f} 万円")
         st.metric("貯金のみの場合", f"{saving_trajectory[-1]:,.0f} 万円")
 
+        # 🔷 統合グラフの作成
+        if st.session_state.get("balances"):
+            household_balances = st.session_state["balances"][:len(trajectory_50)]
+            integrated_total = np.array(household_balances) + np.array(trajectory_50)
+
+            st.header("📈 統合シミュレーション（家計 + 投資）")
+            fig, ax = plt.subplots(figsize=(12, 8))
+            ax.plot(ages, household_balances, label="家計シミュレーション", color="blue", linestyle="--")
+            ax.plot(ages, trajectory_50, label="投資シミュレーション（中央値）", color="red", linestyle=":")
+            ax.plot(ages, integrated_total, label="統合結果", color="black", linewidth=2)
+
+            xtick_indices = [i for i, a in enumerate(ages) if a % 5 == 0 or a == start_age]
+            ax.set_xticks(ages[xtick_indices])
+            ax.set_xticklabels([f"{a}\n({start_year + a - start_age})" for a in xtick_indices])
+            ax.set_xlabel("Age(Year)")
+            ax.set_ylabel("Amount (10,000 Yen)")
+            ax.set_title("Integrated Simulation (Household + Investment)")
+            ax.legend()
+            st.pyplot(fig)
+
+            st.markdown(f"💡 **定年時の統合資産額（中央値）**: `{integrated_total[-1]:,.0f} 万円`")
+
