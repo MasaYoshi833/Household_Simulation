@@ -116,6 +116,7 @@ if st.button("シミュレーションを実行", type="primary"):
     st.session_state["ages"] = ages
     st.session_state["years"] = years
     st.session_state["initial_savings"] = initial_savings
+    st.session_state["retirement_age"] = retirement_age
 
 if st.session_state.get("household_done"):
     st.markdown("""
@@ -224,7 +225,8 @@ if st.session_state.get("household_done"):
         for i, age in enumerate(st.session_state.ages):
             income = st.session_state.incomes[i]
             expense = st.session_state.expenses[i]
-            expense += monthly_contribution * 12
+            if age < st.session_state.retirement_age:
+                expense += st.session_state.monthly_contribution * 12
             balance += income - expense
             adjusted_balances.append(balance)
 
