@@ -226,7 +226,7 @@ if st.session_state.get("household_done"):
             income = st.session_state.incomes[i]
             expense = st.session_state.expenses[i]
             if age < st.session_state.retirement_age:
-                expense += st.session_state.monthly_contribution * 12
+                expense += monthly_contribution * 12
             balance += income - expense
             adjusted_balances.append(balance)
 
