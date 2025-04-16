@@ -225,12 +225,19 @@ if st.session_state.get("household_done"):
             adjusted_balances.append(balance)
 
         # 投資50パーセンタイルとの合算（家計に含まれない投資資産）
-        integrated_total = [adj_bal + val for adj_bal, val in zip(adjusted_balances, trajectory_50)]
+        investment_full = []
+        for i, age in enumerate(st.session_state.ages):
+            if age <= retirement_age:
+                investment_full.append(trajectory_50[i])
+            else:
+                investment_full.append(trajectory_50[-1])  # 65歳以降は固定
+
+        integrated_total = [adj_bal + inv for adj_bal, inv in zip(adjusted_balances, investment_full)]
 
         # 統合グラフの描画
         fig, ax = plt.subplots(figsize=(12, 8))
-        ax.plot(st.session_state.years, integrated_total, label="Balance (with Investment(Median))", color="Orange", linewidth=2)
-        ax.plot(st.session_state.years, adjusted_balances, label="", linestyle="--", color="blue")
+        ax.plot(st.session_state.years, integrated_total, label="Balance (with Investment Median)", color="orange", linewidth=2)
+        ax.plot(st.session_state.years, adjusted_balances, label="Balance (without Investment)", linestyle="--", color="blue")
 
         # X軸：年齢と西暦を併記、5歳刻みで表示
         xtick_indices = [i for i, age in enumerate(st.session_state.ages) if age % 5 == 0 or age == st.session_state.ages[0]]
@@ -241,6 +248,6 @@ if st.session_state.get("household_done"):
 
         ax.set_xlabel("Age(Year)")
         ax.set_ylabel("Amount (10,000 Yen)")
-        ax.set_title("Integrated Simulation (Household + Investment)",fontsize=10)
+        ax.set_title("Integrated Simulation (Household + Investment)", fontsize=10)
         ax.legend(fontsize=10)
         st.pyplot(fig)
